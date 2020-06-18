@@ -32,7 +32,7 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
                            """
                 withEnv(["OE_SIMULATION=1"]) {
                     oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE")
-                }
+                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')}
             }
         }
     }
