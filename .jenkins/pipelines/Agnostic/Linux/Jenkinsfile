@@ -28,7 +28,7 @@ def simulationContainerTest(String version, String build_type, List extra_cmake_
                                ${extra_cmake_args.join(' ')}                            \
                                -Wdev
                            ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS} > ctest.log
                            """
                 withEnv(["OE_SIMULATION=1"]) {
                     oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE")
