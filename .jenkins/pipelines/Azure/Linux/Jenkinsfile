@@ -117,7 +117,7 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
                 sh  """ echo 'I am working' > log.txt
                         echo 'i am sophie hear me'
                         """
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${label}/lvi-mitigationControlFlow/SGX1FLC/", containerName: 'oejenkins')
                 sh  """ echo 'ROAAAAAAAAAAAAAAAAAAR'
                         """
             }
