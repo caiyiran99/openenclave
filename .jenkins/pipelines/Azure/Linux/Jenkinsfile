@@ -260,11 +260,6 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 try{
     oe.emailJobStatus('STARTED')
     def testing_stages = [
-        "Host verification 1604 Release":         { ACCHostVerificationTest('16.04', 'Release') },
-        "Host verification 1804 Release":         { ACCHostVerificationTest('18.04', 'Release') },
-
-        "ACC1804 GNU gcc SGX1FLC":                { ACCGNUTest() },
-
         "RHEL-8 clang-8 simulation Release":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
         "RHEL-8 clang-8 simulation Debug":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
     ]
