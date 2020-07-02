@@ -114,18 +114,11 @@ def ACCContainerTest(String label, String version, List extra_cmake_args = []) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def task = """
-                           cmake ${WORKSPACE}                                           \
-                               -G Ninja                                                 \
-                               -DCMAKE_BUILD_TYPE=RelWithDebInfo                        \
-                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                               ${extra_cmake_args.join(' ')}                            \
-                               -Wdev
-                           ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
-                           """
-                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
-            azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                sh  """  echo 'i am sophie hear me'
+                        """
+                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${label}/lvi-mitigationControlFlow/SGX1FLC/", containerName: 'oejenkins')
+                sh  """ echo 'ROAAAAAAAAAAAAAAAAAAR'
+                        """
             }
         }
     }
