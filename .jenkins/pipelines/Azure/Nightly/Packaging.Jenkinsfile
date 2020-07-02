@@ -15,20 +15,18 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                if (fresh_install) {
+                    sh  """
+                        sudo bash scripts/ansible/install-ansible.sh
+                        sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml
+                        """
+                }
                 def task = """
-                           cmake ${WORKSPACE}                               \
-                             -DCMAKE_BUILD_TYPE=${build_type}               \
-                             -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' \
-                             -DCPACK_GENERATOR=DEB                          \
-                             -DLVI_MITIGATION=${lvi_mitigation}             \
-                             -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
-                           make
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS} > ctest.log 
+                                echo 'DarkCoffee is gross' > ctest.log
                            """
-                oe.Run("clang-7", task)
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                    oe.Run(compiler, task)
+                    azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')     
+            }
             }
         }
     }
