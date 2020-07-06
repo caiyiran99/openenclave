@@ -9,6 +9,17 @@ GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
 
+AGENTS_LABELS = [
+    "acc-ubuntu-16.04":         env.UBUNTU_1604_CUSTOM_LABEL ?: "ACC-1604",
+    "acc-ubuntu-18.04":         env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
+    "acc-rhel-8":               env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
+    "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
+    "windows-nonsgx":           env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows",
+    "acc-ubuntu-16.04-vanilla": env.UBUNTU_VANILLA_1604_CUSTOM_LABEL ?: "vanilla-ubuntu-1604",
+    "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804",
+    "acc-rhel-8-vanilla":       env.RHEL_8_VANILLA_CUSTOM_LABEL ?: "vanilla-rhel-8"
+]
+
 def ACCTest(String label, String compiler, String build_type, List extra_cmake_args = [], List test_env = [], boolean fresh_install = false) {
     stage("${label} ${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}, test_env: ${test_env}${fresh_install ? ", e2e" : ""}") {
         node(label) {
