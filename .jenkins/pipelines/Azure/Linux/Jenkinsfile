@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+BRANCH_NAME = env.BRANCH_NAME ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
