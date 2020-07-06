@@ -9,26 +9,25 @@ GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
 
-def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'None') {
-    stage("Ubuntu${version} SGX1FLC Package ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
-        node("ACC-${version}") {
+def ACCTest(String label, String compiler, String build_type, List extra_cmake_args = [], List test_env = [], boolean fresh_install = false) {
+    stage("${label} ${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}, test_env: ${test_env}${fresh_install ? ", e2e" : ""}") {
+        node(label) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                if (fresh_install) {
+                    sh  """
+                        sudo bash scripts/ansible/install-ansible.sh
+                        sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml
+                        """
+                }
                 def task = """
-                           cmake ${WORKSPACE}                               \
-                             -DCMAKE_BUILD_TYPE=${build_type}               \
-                             -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' \
-                             -DCPACK_GENERATOR=DEB                          \
-                             -DLVI_MITIGATION=${lvi_mitigation}             \
-                             -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
-                           make
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS} > ctest.log 
+                                echo 'DarkCoffee is gross' > ctest.log
                            """
-                oe.Run("clang-7", task)
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                withEnv(test_env) {
+                    oe.Run(compiler, task)
+                    azureUpload(storageCredentialId: 'sophiestore', filesPath: '**/*.log', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                }
             }
         }
     }
@@ -49,25 +48,8 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
 try{
     oe.emailJobStatus('STARTED')
     parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
-         "1604 SGX1FLC Package Debug LVI" :          { LinuxPackaging('1604', 'Debug', 'ControlFlow') },
-         "1604 SGX1FLC Package Release" :            { LinuxPackaging('1604', 'Release') },
-         "1604 SGX1FLC Package Release LVI" :        { LinuxPackaging('1604', 'Release', 'ControlFlow') },
-         "1604 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1604', 'RelWithDebInfo') },
-         "1604 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1604', 'RelWithDebInfo', 'ControlFlow') },
-         "1804 SGX1FLC Package Debug" :              { LinuxPackaging('1804', 'Debug') },
-         "1804 SGX1FLC Package Debug LVI" :          { LinuxPackaging('1804', 'Debug', 'ControlFlow') },
-         "1804 SGX1FLC Package Release" :            { LinuxPackaging('1804', 'Release') },
-         "1804 SGX1FLC Package Release LVI" :        { LinuxPackaging('1804', 'Release', 'ControlFlow') },
-         "1804 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1804', 'RelWithDebInfo') },
-         "1804 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
-         "Windows 2016 Debug" :                      { WindowsPackaging('2016','Debug') },
-         "Windows 2016 Debug LVI" :                  { WindowsPackaging('2016','Debug', 'ControlFlow') },
-         "Windows 2016 Release" :                    { WindowsPackaging('2016','Release') },
-         "Windows 2016 Release LVI" :                { WindowsPackaging('2016','Release', 'ControlFlow') },
-         "Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
-         "Windows 2019 Debug LVI" :                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
-         "Windows 2019 Release" :                    { WindowsPackaging('2019','Release') },
-         "Windows 2019 Release LVI" :                { WindowsPackaging('2019','Release', 'ControlFlow') }
+         "RHEL-8 clang-8 simulation Release":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
+         "RHEL-8 clang-8 simulation Debug":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
