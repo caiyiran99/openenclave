@@ -33,21 +33,10 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
     }
 }
 
-def WindowsPackaging(String version, String build_type, String lvi_mitigation = 'None') {
-    stage("Windows SGX1FLC ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
-        node("SGXFLC-Windows-${version}-DCAP") {
-            timeout(GLOBAL_TIMEOUT_MINUTES) {
-                oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS, lvi_mitigation)
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'sophiestore', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-            }
-        }
-    }
-}
 
 try{
     oe.emailJobStatus('STARTED')
-    parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
+    parallel 
          "RHEL-8 clang-8 simulation Release":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
          "RHEL-8 clang-8 simulation Debug":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
 } catch(Exception e) {
