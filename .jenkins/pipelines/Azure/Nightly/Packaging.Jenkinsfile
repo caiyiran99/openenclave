@@ -9,7 +9,7 @@ GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
 
-AGENTS_LABELS = [
+def AGENTS_LABELS = [
     "acc-ubuntu-16.04":         env.UBUNTU_1604_CUSTOM_LABEL ?: "ACC-1604",
     "acc-ubuntu-18.04":         env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
     "acc-rhel-8":               env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
