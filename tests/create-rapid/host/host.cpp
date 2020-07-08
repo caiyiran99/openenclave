@@ -121,6 +121,7 @@ Cleanup:
     // Fail the test if any of the functions failed.
 
     oe_put_err("_test_simultaneous failed");
+}
 
 static void _test_multithreaded(
     const char* path,
