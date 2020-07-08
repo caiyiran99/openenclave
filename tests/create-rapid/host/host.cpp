@@ -119,7 +119,7 @@ Cleanup:
     }
 
     // Fail the test if any of the functions failed.
-
+    //if (result != OE_OK)
     oe_put_err("_test_simultaneous failed");
 }
 
